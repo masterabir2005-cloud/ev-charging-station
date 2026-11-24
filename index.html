@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Smart EV Charging Planning System - Kolkata</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
+
+<style>
+body{
+font-family:'Segoe UI',Arial;
+margin:0;
+background:#eef5f4;
+}
+
+.tabcontent{display:none;}
+
+header{
+text-align:center;
+padding:15px;
+background:white;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.tabs{
+display:flex;
+background:#004d40;
+}
+
+.tabs button{
+flex:1;
+padding:12px;
+border:none;
+background:#004d40;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.tabs button:hover{background:#00796b;}
+
+.panel{
+background:white;
+margin:20px;
+padding:20px;
+border-radius:10px;
+}
+
+.vehicle-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:15px;
+}
+
+.vehicle{
+background:white;
+padding:10px;
+border-radius:10px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.vehicle:hover{transform:scale(1.05);}
+
+.vehicle img{
+width:100%;
+height:100px;
+object-fit:cover;
+border-radius:8px;
+}
+
+.vehicle small{
+display:block;
+font-size:12px;
+color:#444;
+margin-top:5px;
+}
+
+.team-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:15px;
+margin-top:15px;
+}
+
+.team-member{
+text-align:center;
+}
+
+.team-member img{
+width:120px;
+height:120px;
+object-fit:cover;
+border-radius:50%;
+margin-bottom:10px;
+}
+
+#map{
+height:500px;
+margin:20px;
+border-radius:10px;
+}
+
+input,select,textarea{
+width:100%;
+padding:10px;
+margin-top:8px;
+}
+
+button{
+padding:10px;
+background:#009688;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.star{
+font-size:25px;
+cursor:pointer;
+color:gray;
+}
+.star.active{color:gold;}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Smart EV Charging Planning System</h2>
+</header>
+
+<div class="tabs">
+<button onclick="openTab('login')">Login</button>
+<button onclick="checkLogin('vehicle')">Select Vehicle</button>
+<button onclick="checkVehicle('main')">EV System</button>
+<button onclick="checkVehicle('booking')">Booking</button>
+<button onclick="checkVehicle('feedbackTab')">Feedback</button>
+<button onclick="openTab('about')">About</button>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="tabcontent" style="display:block">
+<div class="panel">
+<h3>Demo Preview</h3>
+<p>This static preview does not collect or save personal information. Login, bookings, and feedback are simulated.</p>
+<button onclick="enterSystem()">Start Demo</button>
+</div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="tabcontent">
+<div class="panel">
+<h3>About Smart EV Charging Planning</h3>
+<p>Welcome to the Smart EV Charging Planning System. This app helps EV users select vehicles, find nearby charging stations, book charging slots, and share feedback.</p>
+<p>Features include: vehicle selection, range-aware station search, live routing, booking support, and customer feedback.</p>
+<p>This GitHub Pages version is a static demo. It does not connect to the backend or save bookings and feedback.</p>
+</div>
+</div>
+
+<!-- VEHICLES -->
+<div id="vehicle" class="tabcontent">
+<div class="panel">
+<h3>Select EV Vehicle</h3>
+
+<div class="vehicle-grid">
+
+<div class="vehicle" onclick="selectVehicle('Tesla Model 3',162,60)">
+<img src="https://imgd.aeplcdn.com/1056x594/n/lnk9cva_1595893.jpg?q=80">
+<p>Tesla Model 3</p>
+<small>Speed: 162 km/h | Battery: 60 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Tata Nexon EV',120,40)">
+<img src="https://imgd.aeplcdn.com/664x374/n/cw/ec/126681/nexon-ev-prime-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80">
+<p>Tata Nexon EV</p>
+<small>Speed: 120 km/h | Battery: 40 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('MG ZS EV',175,50)">
+<img src="https://mgmotor.scene7.com/is/image/mgmotor/zs-img-dsc-0321?$mg-rgb-tablet-image-responsive$&fmt=png-alpha">
+<p>MG ZS EV</p>
+<small>Speed: 175 km/h | Battery: 50 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Hyundai Kona EV',155,45)">
+<img src="https://imgcdn.oto.com.sg/large/gallery/color/4/95/hyundai-kona-electric-color-552331.jpg">
+<p>Hyundai Kona EV</p>
+<small>Speed: 155 km/h | Battery: 45 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Mahindra XUV400',150,39)">
+<img src="https://stimg.cardekho.com/images/carexteriorimages/930x620/Mahindra/XUV400-EV/11392/1758199122411/front-left-side-47.jpg">
+<p>Mahindra XUV400</p>
+<small>Speed: 150 km/h | Battery: 39 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('BYD Atto 3',160,60)">
+<img src="https://img.autocarpro.in/autocarpro/62b9a6c3-c511-4162-9de7-dfb486ef3d5d.png">
+<p>BYD Atto 3</p>
+<small>Speed: 160 km/h | Battery: 60 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Kia EV6',185,77)">
+<img src="https://stimg.cardekho.com/images/carexteriorimages/930x620/Kia/EV6/11740/1760005604163/front-left-side-47.jpg">
+<p>Kia EV6</p>
+<small>Speed: 185 km/h | Battery: 77 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Ather 450X',90,3.7)">
+<img src="https://cdn.bikedekho.com/processedimages/ather-energy/2025-450x/source/2025-450x69a92155caf0d.jpg">
+<p>Ather 450X</p>
+<small>Speed: 90 km/h | Battery: 3.7 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('Ola S1 Pro',85,3.5)">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpBUmOpjyL_xsaJ4pHfTLMbCOXh6hwmQRbiQ&s">
+<p>Ola S1 Pro</p>
+<small>Speed: 85 km/h | Battery: 3.5 kWh</small>
+</div>
+
+<div class="vehicle" onclick="selectVehicle('TVS iQube',80,3.2)">
+<img src="https://www.tvsmotor.com/electric-scooters/tvs-iqube/-/media/Vehicles/Feature/Iqube/Variant/TVS-iQube/Color_Images/Walnut-Brown/WalnutBrown-angle-iqube34.webp">
+<p>TVS iQube</p>
+<small>Speed: 80 km/h | Battery: 3.2 kWh</small>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="tabcontent">
+<div class="panel">
+<input type="range" min="10" max="100" value="50" id="battery">
+<p>Battery: <span id="batteryValue">50</span>%</p>
+<button onclick="findStations()">Find Stations</button>
+<p id="result"></p>
+</div>
+
+<div id="map"></div>
+</div>
+
+<!-- BOOKING -->
+<div id="booking" class="tabcontent">
+<div class="panel">
+<select id="stationSelect"></select>
+<input type="time">
+<button onclick="bookSlot()">Book Slot</button>
+<p id="bookingMessage"></p>
+</div>
+</div>
+
+<!-- FEEDBACK -->
+<div id="feedbackTab" class="tabcontent">
+<div class="panel">
+
+<h3>Rate Us</h3>
+<div id="stars">
+<span class="star" onclick="rate(1)">★</span>
+<span class="star" onclick="rate(2)">★</span>
+<span class="star" onclick="rate(3)">★</span>
+<span class="star" onclick="rate(4)">★</span>
+<span class="star" onclick="rate(5)">★</span>
+</div>
+
+<textarea id="review"></textarea>
+<button onclick="submitFeedback()">Submit</button>
+<p id="feedbackMessage"></p>
+
+<hr>
+</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+
+function login(){
+}
+
+let loggedIn=false, vehicleSelected=false;
+let map, routingControl, rangeCircle, userMarker;
+let rating=0;
+let batteryCapacity = 40; // default
+
+let userLat=22.5726, userLng=88.3639;
+let vehicleSpeed=40;
+
+const stations=[
+{name:"Sector V",lat:22.576,lng:88.433},
+{name:"Gariahat",lat:22.518,lng:88.365},
+{name:"New Town",lat:22.585,lng:88.473},
+{name:"Howrah",lat:22.583,lng:88.342},
+{name:"Park Circus",lat:22.541,lng:88.372}
+];
+
+/* 🚗 CAR ICON */
+const carIcon=L.icon({
+iconUrl:"https://cdn-icons-png.flaticon.com/512/744/744465.png",
+iconSize:[40,40]
+});
+
+/* 🚦 LIVE TRAFFIC FACTOR (FEATURE 2) */
+function trafficFactor(){
+return 1 + Math.random()*0.6; // 1.0 to 1.6 delay
+}
+
+function openTab(tab){
+document.querySelectorAll(".tabcontent").forEach(t=>t.style.display="none");
+document.getElementById(tab).style.display="block";
+if(tab==="main" && !map) setTimeout(initMap,300);
+if(map) setTimeout(()=>map.invalidateSize(),200);
+}
+
+function checkLogin(tab){
+if(!loggedIn){alert("Login first");return;}
+openTab(tab);
+}
+
+function checkVehicle(tab){
+if(!vehicleSelected){alert("Select vehicle");return;}
+openTab(tab);
+}
+
+function enterSystem(){
+login();
+loggedIn=true;
+openTab("vehicle");
+}
+
+function selectVehicle(name,speed,batteryCap){
+vehicleSelected=true;
+vehicleSpeed=speed;
+batteryCapacity = batteryCap;
+document.getElementById("battery").value = 50;
+document.getElementById("batteryValue").innerText = 50;
+openTab("main");
+}
+
+function initMap(){
+
+map=L.map('map').setView([userLat,userLng],12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+userMarker=L.marker([userLat,userLng],{icon:carIcon}).addTo(map);
+
+stations.forEach(s=>{
+L.marker([s.lat,s.lng]).addTo(map).bindPopup(s.name);
+let opt=document.createElement("option");
+opt.text=s.name;
+document.getElementById("stationSelect").add(opt);
+});
+
+navigator.geolocation.watchPosition(pos=>{
+userLat=pos.coords.latitude;
+userLng=pos.coords.longitude;
+userMarker.setLatLng([userLat,userLng]);
+});
+}
+
+document.getElementById("battery").oninput = function(){
+document.getElementById("batteryValue").innerText = this.value;
+};
+
+function getDistance(a,b,c,d){
+let R=6371;
+let dLat=(c-a)*Math.PI/180;
+let dLon=(d-b)*Math.PI/180;
+let x=Math.sin(dLat/2)**2+
+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;
+return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+function findStations(){
+
+let batteryPercent = parseInt(document.getElementById("battery").value);
+let range = batteryPercent * 0.25; // rough estimate: 1% battery = 0.25 km
+
+if(rangeCircle) map.removeLayer(rangeCircle);
+
+rangeCircle=L.circle([userLat,userLng],{
+radius:range*1000,color:"green"
+}).addTo(map);
+
+let list=stations.map(s=>{
+let dist=getDistance(userLat,userLng,s.lat,s.lng);
+
+/* 🚦 FEATURE 2: LIVE TRAFFIC ROUTING */
+let traffic=trafficFactor();
+let adjustedDist=dist*traffic;
+
+/* ⚡ FEATURE 4: CHARGING TIME PREDICTION */
+let chargeTime=(100-batteryPercent)*1.1 + adjustedDist*2;
+
+let time=(adjustedDist/vehicleSpeed)*60;
+
+return {...s,d:adjustedDist,t:time,ct:chargeTime};
+}).sort((a,b)=>a.d-b.d);
+
+let output="";
+
+list.forEach(s=>{
+let safe=s.d<=range;
+
+output+=`
+<b>${s.name}</b><br>
+Distance (traffic adjusted): ${s.d.toFixed(2)} km<br>
+Travel Time: ${s.t.toFixed(0)} min<br>
+Charging Time: ~${s.ct.toFixed(0)} min<br>
+Status: <b style="color:${safe?'green':'red'}">${safe?'Safe':'Unsafe'}</b><br>
+<a href="https://www.google.com/maps/dir/${userLat},${userLng}/${s.lat},${s.lng}" target="_blank">Navigate</a>
+<hr>
+`;
+});
+
+document.getElementById("result").innerHTML=output;
+
+let best=list.find(s=>s.d<=range);
+
+if(best){
+if(routingControl) map.removeControl(routingControl);
+
+routingControl=L.Routing.control({
+waypoints:[
+L.latLng(userLat,userLng),
+L.latLng(best.lat,best.lng)
+]
+}).addTo(map);
+}
+}
+
+/* FEEDBACK */
+function rate(n){
+rating=n;
+document.querySelectorAll(".star").forEach((s,i)=>{
+s.classList.toggle("active",i<n);
+});
+}
+
+function submitFeedback(){
+document.getElementById("feedbackMessage").innerText="Rating "+rating+"⭐ submitted";
+}
+
+function bookSlot(){
+document.getElementById("bookingMessage").innerText="Booked";
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+bookings.csv
+feedbacks.csv
+users.csv
+vehicles.csv
+stations.csv
+student*.jpg
+server.js
+EVCHARGE.html
+package.json
+package-lock.json
